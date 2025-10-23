@@ -4,6 +4,7 @@
  */
 
 import { getCloudTypeFromWeatherCode, getSunsetQualityScore } from '../utils/weatherCalculations.js';
+import { SUNSET_HOUR, AQI, HUMIDITY, WIND_SPEED } from '../../shared/constants.js';
 
 /**
  * Process historical weather data to calculate sunset scores for each day
@@ -20,21 +21,20 @@ export const processHistoricalSunsetData = (weatherData, aqiData, location, year
   // Process each day of the year
   for (let dayIndex = 0; dayIndex < totalDays; dayIndex++) {
     const date = new Date(year, 0, dayIndex + 1);
-    const sunsetHour = 18; // Approximate sunset hour
-    const hourIndex = (dayIndex * 24) + sunsetHour;
+    const hourIndex = (dayIndex * 24) + SUNSET_HOUR;
     
     // Get weather data for sunset hour (with bounds checking)
     const safeHourIndex = Math.min(hourIndex, (weatherData.hourly?.time?.length || 0) - 1);
     
     const weatherCode = weatherData.hourly?.weather_code?.[safeHourIndex] || 0;
     const cloudCoverage = weatherData.hourly?.cloud_cover?.[safeHourIndex] || 50;
-    const humidity = weatherData.hourly?.relative_humidity_2m?.[safeHourIndex] || 50;
+    const humidity = weatherData.hourly?.relative_humidity_2m?.[safeHourIndex] || HUMIDITY.DEFAULT;
     const precipChance = weatherData.hourly?.precipitation_probability?.[safeHourIndex] || 0;
     const visibility = weatherData.hourly?.visibility?.[safeHourIndex] || 10000;
-    const windSpeed = weatherData.hourly?.wind_speed_10m?.[safeHourIndex] || 10;
-    
+    const windSpeed = weatherData.hourly?.wind_speed_10m?.[safeHourIndex] || WIND_SPEED.DEFAULT;
+
     // Get AQI for this hour
-    let aqi = 50; // Default moderate AQI
+    let aqi = AQI.DEFAULT;
     if (aqiData && aqiData.hourly && aqiData.hourly.us_aqi) {
       aqi = aqiData.hourly.us_aqi[safeHourIndex] || 50;
     }

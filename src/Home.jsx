@@ -11,74 +11,16 @@ const Home = () => {
   const [error, setError] = useState(null);
   const containerRef = useRef(null);
 
+  // Prevent scrolling when forecast is shown
   useEffect(() => {
     if (forecast) {
-      // Prevent all scroll events
-      const preventDefault = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      };
-
-      const preventDefaultForScrollKeys = (e) => {
-        // Keys: Page Up, Page Down, Arrow Up, Arrow Down, Spacebar, Home, End
-        if ([33, 34, 38, 40, 32, 35, 36].includes(e.keyCode)) {
-          e.preventDefault();
-          e.stopPropagation();
-          return false;
-        }
-      };
-
-      // Add event listeners to prevent scrolling
-      window.addEventListener('DOMMouseScroll', preventDefault, false);
-      window.addEventListener('wheel', preventDefault, { passive: false });
-      window.addEventListener('touchmove', preventDefault, { passive: false });
-      window.addEventListener('keydown', preventDefaultForScrollKeys, false);
-
-      // Set body styles to prevent scrolling
       document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.top = '0';
-      document.body.style.left = '0';
-
-      // Store the event listeners for cleanup
-      document._scrollPreventers = {
-        preventDefault,
-        preventDefaultForScrollKeys
-      };
     } else {
-      // Remove event listeners
-      if (document._scrollPreventers) {
-        window.removeEventListener('DOMMouseScroll', document._scrollPreventers.preventDefault, false);
-        window.removeEventListener('wheel', document._scrollPreventers.preventDefault, { passive: false });
-        window.removeEventListener('touchmove', document._scrollPreventers.preventDefault, { passive: false });
-        window.removeEventListener('keydown', document._scrollPreventers.preventDefaultForScrollKeys, false);
-        delete document._scrollPreventers;
-      }
-
-      // Reset body styles
-      document.body.style.overflow = 'auto';
-      document.body.style.position = 'static';
-      document.body.style.width = 'auto';
-      document.body.style.top = 'auto';
-      document.body.style.left = 'auto';
+      document.body.style.overflow = '';
     }
 
     return () => {
-      // Cleanup on unmount
-      if (document._scrollPreventers) {
-        window.removeEventListener('DOMMouseScroll', document._scrollPreventers.preventDefault, false);
-        window.removeEventListener('wheel', document._scrollPreventers.preventDefault, { passive: false });
-        window.removeEventListener('touchmove', document._scrollPreventers.preventDefault, { passive: false });
-        window.removeEventListener('keydown', document._scrollPreventers.preventDefaultForScrollKeys, false);
-        delete document._scrollPreventers;
-      }
-      document.body.style.overflow = 'auto';
-      document.body.style.position = 'static';
-      document.body.style.width = 'auto';
-      document.body.style.top = 'auto';
-      document.body.style.left = 'auto';
+      document.body.style.overflow = '';
     };
   }, [forecast]);
 
@@ -138,7 +80,7 @@ const Home = () => {
           try {
             // First, get the city name from coordinates using reverse geocoding
             const geocodingResponse = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18&email=your-email@example.com`
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18&email=${import.meta.env.VITE_NOMINATIM_EMAIL || 'suncast-app@example.com'}`
             );
             
             if (!geocodingResponse.ok) {

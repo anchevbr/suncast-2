@@ -6,49 +6,31 @@ import SunsetBackground from "./components/sunset/SunsetBackground";
 import DayCard from "./DayCard";
 import MinimalHistoricalSunsets from "./components/MinimalHistoricalSunsets";
 import { fetchHistoricalForecastWithProgress } from "./services/historicalService.js";
-import { getScoringSystem } from "./utils/colorPalette";
 
 const SunsetForecast = ({ forecast, onBack }) => {
   const [historicalData, setHistoricalData] = useState(null);
   const [isLoadingHistorical, setIsLoadingHistorical] = useState(true);
-  const [showLoading, setShowLoading] = useState(true);
 
   // Auto-load historical data when component mounts
   useEffect(() => {
     const loadHistoricalData = async () => {
-      const startTime = Date.now();
-      
       try {
         const location = {
           latitude: forecast.latitude || 0,
           longitude: forecast.longitude || 0,
           name: forecast.location
         };
-        
+
         const data = await fetchHistoricalForecastWithProgress(
-          location, 
+          location,
           () => {} // Ignore progress updates
         );
-        
-        // Calculate remaining time to reach 5 seconds
-        const elapsedTime = Date.now() - startTime;
-        const remainingTime = Math.max(0, 5000 - elapsedTime);
-        
-        // Wait for remaining time, then hide loading and show data
-        setTimeout(() => {
-          setHistoricalData(data);
-          setShowLoading(false);
-          setIsLoadingHistorical(false);
-        }, remainingTime);
+
+        setHistoricalData(data);
+        setIsLoadingHistorical(false);
       } catch (error) {
-        // Still show loading for 5 seconds even on error
-        const elapsedTime = Date.now() - startTime;
-        const remainingTime = Math.max(0, 5000 - elapsedTime);
-        
-        setTimeout(() => {
-          setShowLoading(false);
-          setIsLoadingHistorical(false);
-        }, remainingTime);
+        console.error('Failed to load historical data:', error);
+        setIsLoadingHistorical(false);
       }
     };
 

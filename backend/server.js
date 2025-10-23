@@ -3,6 +3,7 @@ import { createClient } from 'redis';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { getSunsetQualityScore, getCloudTypeFromWeatherCode } from './scoringService.js';
+import { CACHE_TTL, SUNSET_HOUR } from '../shared/constants.js';
 
 dotenv.config();
 
@@ -21,9 +22,7 @@ await redis.connect();
 app.use(cors());
 app.use(express.json());
 
-// Cache duration (2 hours for forecast, 24 hours for historical)
-const FORECAST_CACHE_TTL = 2 * 60 * 60; // 2 hours in seconds
-const HISTORICAL_CACHE_TTL = 24 * 60 * 60; // 24 hours in seconds
+// Cache durations imported from shared constants
 
 /**
  * Get forecast data with Redis caching
@@ -46,7 +45,7 @@ app.get('/api/forecast/:lat/:lon', async (req, res) => {
     const forecastData = await fetchForecastFromAPI(lat, lon);
     
     // Cache the result
-    await redis.setEx(cacheKey, FORECAST_CACHE_TTL, JSON.stringify(forecastData));
+    await redis.setEx(cacheKey, CACHE_TTL.FORECAST, JSON.stringify(forecastData));
     
     res.json({
       ...forecastData,
@@ -79,7 +78,7 @@ app.get('/api/historical/:lat/:lon/:year', async (req, res) => {
     const historicalData = await fetchHistoricalFromAPI(lat, lon, year);
     
     // Cache the result
-    await redis.setEx(cacheKey, HISTORICAL_CACHE_TTL, JSON.stringify(historicalData));
+    await redis.setEx(cacheKey, CACHE_TTL.HISTORICAL, JSON.stringify(historicalData));
     
     res.json({
       ...historicalData,
@@ -174,6 +173,7 @@ async function fetchForecastFromAPI(lat, lon) {
       aqiData = await aqiResponse.json();
     }
   } catch (error) {
+    console.error('Failed to fetch air quality data:', error.message);
   }
   
   // Process forecast data (same logic as frontend)
@@ -230,9 +230,8 @@ function processForecastData(weatherData, aqiData, lat, lon) {
       sunsetTime = rawSunsetTime;
     }
     
-    // Calculate hour index for sunset (around 18:00)
-    const sunsetHour = 18;
-    const hourIndex = (dayIndex * 24) + sunsetHour;
+    // Calculate hour index for sunset
+    const hourIndex = (dayIndex * 24) + SUNSET_HOUR;
     const safeHourIndex = Math.min(hourIndex, weatherData.hourly.time.length - 1);
 
     // Get weather data for sunset hour

@@ -28,7 +28,8 @@ export const fetchForecastData = async (locationQuery, customLocationName = null
   }
 
   // Step 2: Fetch from backend API with Redis caching
-  const response = await fetch(`http://localhost:3001/api/forecast/${coords.latitude}/${coords.longitude}`);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const response = await fetch(`${API_URL}/api/forecast/${coords.latitude}/${coords.longitude}`);
   
   if (!response.ok) {
     throw new Error('Failed to fetch forecast data from backend');

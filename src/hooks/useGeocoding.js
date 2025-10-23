@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { DEBOUNCE_DELAY, GEOCODING } from '../../shared/constants.js';
 
 /**
  * Professional geocoding hook with proper state management
@@ -29,7 +30,7 @@ export const useGeocoding = () => {
     }
 
     // Minimum query length
-    if (query.length < 3) {
+    if (query.length < GEOCODING.MIN_QUERY_LENGTH) {
       setSuggestions([]);
       setError(null);
       return;
@@ -48,7 +49,7 @@ export const useGeocoding = () => {
           `https://nominatim.openstreetmap.org/search?` +
           `q=${encodeURIComponent(query)}&` +
           `format=json&` +
-          `limit=8&` +
+          `limit=${GEOCODING.RESULTS_LIMIT}&` +
           `addressdetails=1&` +
           `extratags=1&` +
           `featuretype=city&` +
@@ -56,7 +57,7 @@ export const useGeocoding = () => {
           `bounded=0&` +
           `dedupe=1&` +
           `polygon_geojson=0&` +
-          `email=your-email@domain.com&` +
+          `email=${import.meta.env.VITE_NOMINATIM_EMAIL || 'suncast-app@example.com'}&` +
           `accept-language=en`,
           {
             signal: abortControllerRef.current.signal,
@@ -125,7 +126,7 @@ export const useGeocoding = () => {
             if (b.importance !== a.importance) return b.importance - a.importance;
             return a.display_name.localeCompare(b.display_name);
           })
-          .slice(0, 5);
+          .slice(0, GEOCODING.MAX_SUGGESTIONS);
 
         setSuggestions(sortedResults);
         } catch (error) {
@@ -135,7 +136,7 @@ export const useGeocoding = () => {
         } finally {
         setIsLoading(false);
       }
-    }, 300); // Professional debounce timing
+    }, DEBOUNCE_DELAY);
   }, []);
 
   /**
