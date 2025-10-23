@@ -10,20 +10,20 @@ const DayCard = ({ day, index }) => {
 
   return (
     <motion.div
-      initial={{ y: 50, scale: 0.9 }}
-      animate={{ y: 0, scale: 1 }}
-      transition={{ 
+      initial={{ x: 50, scale: 0.9, opacity: 0 }}
+      animate={{ x: 0, scale: 1, opacity: 1 }}
+      transition={{
         delay: index * 0.1,
         duration: 0.6,
         ease: "easeOut"
       }}
-      whileHover={{ 
+      whileHover={{
         y: -8,
-        scale: 1.02,
+        scale: 1.05,
         transition: { duration: 0.2 }
       }}
       role="listitem"
-      className="relative"
+      className="relative w-32 md:w-36"
     >
       {/* Fixed blur background that doesn't animate */}
       <div 

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./components/ui/button";
-import { ArrowUp } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import SunsetBackground from "./components/sunset/SunsetBackground";
 import DayCard from "./DayCard";
 import MinimalHistoricalSunsets from "./components/MinimalHistoricalSunsets";
 import { fetchHistoricalForecastWithProgress } from "./services/historicalService.js";
 
-const SunsetForecast = ({ forecast, onBack }) => {
+const SunsetForecast = ({ forecast, onBack, scrollProgress }) => {
   const [historicalData, setHistoricalData] = useState(null);
   const [isLoadingHistorical, setIsLoadingHistorical] = useState(true);
 
@@ -37,106 +36,131 @@ const SunsetForecast = ({ forecast, onBack }) => {
     loadHistoricalData();
   }, [forecast.location, forecast.latitude, forecast.longitude]);
 
-
   return (
-    <div className="relative w-full min-h-screen overflow-hidden">
-      {/* Sunset Background Scene */}
-      <SunsetBackground location={forecast.location} />
-
-      <div className="relative z-20 flex flex-col items-center justify-start p-6 md:p-8 pt-8">
-        {/* Back to Search - Outside blur container */}
+    <div className="relative w-full h-full overflow-y-auto overflow-x-hidden">
+      {/* Back to Search Button */}
+      <div className="absolute top-6 left-6 z-30">
         <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2 }}
-          className="mb-2"
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
         >
           <Button
             onClick={onBack}
-            className="bg-transparent hover:bg-transparent text-white/70 hover:text-white/90 font-thin transition-all border-none shadow-none flex flex-col items-center space-y-1 text-sm p-0"
+            className="bg-white/10 hover:bg-white/20 text-white font-thin transition-all border border-white/20 shadow-lg flex items-center space-x-2 text-sm px-4 py-2 rounded-lg backdrop-blur-sm"
           >
-            <ArrowUp className="w-3 h-3" aria-hidden="true" />
-            <span>Back to Search</span>
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            <span>Back</span>
           </Button>
         </motion.div>
+      </div>
 
-        <div className="w-full max-w-6xl space-y-10 backdrop-blur-md bg-white/5 rounded-3xl p-8 shadow-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: -30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2 }}
-            className="text-center"
-          >
-            <h2 className="text-3xl md:text-4xl font-semibold text-white drop-shadow-lg">
-              {forecast.location}
-            </h2>
-          </motion.div>
+      {/* Main Content Container */}
+      <div className="relative z-20 h-full flex flex-col items-center justify-center p-6 md:p-12">
+        {/* Location Title */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mb-8"
+        >
+          <h2 className="text-3xl md:text-5xl font-light text-white drop-shadow-2xl text-center">
+            {forecast.location}
+          </h2>
+        </motion.div>
 
-          {/* 7-Day Forecast */}
-          <div 
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4"
+        {/* 7-Day Forecast Cards - Horizontal Layout */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="w-full max-w-7xl mb-12"
+        >
+          <div
+            className="flex gap-4 md:gap-6 justify-center flex-wrap px-4"
             role="list"
             aria-label="7-day sunset forecast"
           >
             {forecast.days.map((day, index) => (
-              <DayCard key={index} day={day} index={index} />
+              <div key={index} className="flex-shrink-0">
+                <DayCard day={day} index={index} />
+              </div>
             ))}
           </div>
+        </motion.div>
 
-          {/* Historical Sunsets - Fixed height to prevent layout shift */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.5 }}
-            className="mt-0 min-h-[180px]"
-          >
-            <MinimalHistoricalSunsets
-              historicalData={historicalData}
-              isLoading={isLoadingHistorical}
-            />
-          </motion.div>
+        {/* Historical Sunsets Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="w-full max-w-7xl backdrop-blur-md bg-white/5 rounded-3xl p-6 md:p-8 shadow-2xl mb-8"
+        >
+          <MinimalHistoricalSunsets
+            historicalData={historicalData}
+            isLoading={isLoadingHistorical}
+          />
+        </motion.div>
 
-          {/* Scoring System & Weather Explanation - Now on bottom */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 2.0 }}
-            className="mt-16"
-          >
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-8">
-              {/* Scoring System */}
-              <div className="flex flex-col items-center">
-                <h3 className="text-sm font-medium text-white/80 mb-6 text-center">Scoring System</h3>
-                        <div className="flex items-center justify-center">
-                          <div className="relative w-32 h-3 rounded-full bg-gradient-to-r from-gray-500 via-amber-500 via-orange-500 via-pink-500 to-rose-500">
-                            {/* Score markers - removed left and right edges */}
-                            <div className="absolute left-1/4 top-0 w-px h-3 bg-white/50"></div>
-                            <div className="absolute left-1/2 top-0 w-px h-3 bg-white/50"></div>
-                            <div className="absolute left-3/4 top-0 w-px h-3 bg-white/50"></div>
+        {/* Scoring System & Weather Explanation */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="w-full max-w-4xl mb-8"
+        >
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-8 backdrop-blur-sm bg-white/5 rounded-2xl p-6">
+            {/* Scoring System */}
+            <div className="flex flex-col items-center">
+              <h3 className="text-sm font-medium text-white/80 mb-4 text-center">Scoring System</h3>
+              <div className="flex items-center justify-center">
+                <div className="relative w-48 h-4 rounded-full bg-gradient-to-r from-gray-500 via-amber-500 via-orange-500 via-pink-500 to-rose-500">
+                  {/* Score markers */}
+                  <div className="absolute left-1/4 top-0 w-px h-4 bg-white/50"></div>
+                  <div className="absolute left-1/2 top-0 w-px h-4 bg-white/50"></div>
+                  <div className="absolute left-3/4 top-0 w-px h-4 bg-white/50"></div>
 
-                            {/* Score numbers */}
-                            <div className="absolute -top-5 left-0 text-white/60 text-xs">0</div>
-                            <div className="absolute -top-5 left-1/4 transform -translate-x-1/2 text-white/60 text-xs">25</div>
-                            <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 text-white/60 text-xs">50</div>
-                            <div className="absolute -top-5 left-3/4 transform -translate-x-1/2 text-white/60 text-xs">75</div>
-                            <div className="absolute -top-5 right-0 text-white/60 text-xs">100</div>
-                          </div>
-                        </div>
-              </div>
-
-              {/* Visual Separator */}
-              <div className="hidden lg:block w-px h-16 bg-white/20"></div>
-
-              {/* Weather Explanation */}
-              <div className="flex flex-col items-center max-w-2xl">
-                <h3 className="text-lg font-bold text-white mb-1 text-center">How Weather Affects Sunset</h3>
-                <p className="text-xs text-white/70 text-center leading-relaxed">
-                  Cloud coverage and height dramatically impact sunset quality, with high clouds creating beautiful light scattering effects.
-                  Our algorithm analyzes 12+ weather factors to predict the perfect sunset experience.
-                </p>
+                  {/* Score numbers */}
+                  <div className="absolute -top-6 left-0 text-white/60 text-xs">0</div>
+                  <div className="absolute -top-6 left-1/4 transform -translate-x-1/2 text-white/60 text-xs">25</div>
+                  <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-white/60 text-xs">50</div>
+                  <div className="absolute -top-6 left-3/4 transform -translate-x-1/2 text-white/60 text-xs">75</div>
+                  <div className="absolute -top-6 right-0 text-white/60 text-xs">100</div>
+                </div>
               </div>
             </div>
-          </motion.div>
+
+            {/* Visual Separator */}
+            <div className="hidden lg:block w-px h-16 bg-white/30"></div>
+
+            {/* Weather Explanation */}
+            <div className="flex flex-col items-center max-w-md">
+              <h3 className="text-lg font-semibold text-white mb-2 text-center">How Weather Affects Sunset</h3>
+              <p className="text-sm text-white/70 text-center leading-relaxed">
+                Cloud coverage and height dramatically impact sunset quality, with high clouds creating beautiful light scattering effects.
+                Our algorithm analyzes 7+ meteorological factors to predict spectacular sunset experiences.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Mountain silhouettes at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-48 sm:h-64 pointer-events-none">
+          <div
+            className="absolute bottom-0 left-0 right-0 h-full w-full opacity-40"
+            style={{
+              background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)',
+              clipPath: 'polygon(0 100%, 0 70%, 10% 80%, 20% 60%, 35% 85%, 50% 70%, 65% 90%, 80% 75%, 90% 90%, 100% 70%, 100% 100%)'
+            }}
+          ></div>
+
+          <div
+            className="absolute bottom-0 left-0 right-0 h-full w-full opacity-60"
+            style={{
+              background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, transparent 100%)',
+              clipPath: 'polygon(0 100%, 0 85%, 15% 95%, 30% 75%, 45% 90%, 60% 80%, 75% 95%, 90% 80%, 100% 85%, 100% 100%)'
+            }}
+          ></div>
         </div>
       </div>
     </div>
