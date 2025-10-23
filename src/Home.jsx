@@ -11,18 +11,13 @@ const Home = () => {
   const [error, setError] = useState(null);
   const containerRef = useRef(null);
 
-  // Prevent scrolling when forecast is shown
+  // Enable scrolling for better user experience
   useEffect(() => {
-    if (forecast) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-
+    document.body.style.overflow = '';
     return () => {
       document.body.style.overflow = '';
     };
-  }, [forecast]);
+  }, []);
 
   /**
    * Handle location selection from autocomplete
@@ -157,16 +152,15 @@ const Home = () => {
       ref={containerRef}
       className="relative h-screen overflow-y-auto overflow-x-hidden"
       style={{ 
-        scrollBehavior: 'smooth',
-        pointerEvents: forecast ? 'none' : 'auto'
+        scrollBehavior: 'smooth'
       }}
     >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
         
-        /* Disable user scrolling when forecast is shown */
+        /* Enable smooth scrolling */
         body {
-          overscroll-behavior: none;
+          overscroll-behavior: auto;
         }
       `}</style>
 

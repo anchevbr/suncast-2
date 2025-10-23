@@ -39,7 +39,7 @@ const SunsetForecast = ({ forecast, onBack }) => {
 
 
   return (
-    <div className="relative w-full min-h-screen overflow-hidden">
+    <div className="relative w-full min-h-screen">
       {/* Sunset Background Scene */}
       <SunsetBackground location={forecast.location} />
 
