@@ -40,6 +40,24 @@ const SunsetForecast = ({ forecast, onBack }) => {
 
   return (
     <div className="relative w-full min-h-screen">
+      <style>{`
+        /* Custom horizontal scrollbar styling */
+        .horizontal-scroll::-webkit-scrollbar {
+          height: 8px;
+        }
+        .horizontal-scroll::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+        }
+        .horizontal-scroll::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 4px;
+        }
+        .horizontal-scroll::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.5);
+        }
+      `}</style>
+      
       {/* Sunset Background Scene */}
       <SunsetBackground location={forecast.location} />
 
@@ -60,7 +78,7 @@ const SunsetForecast = ({ forecast, onBack }) => {
           </Button>
         </motion.div>
 
-        <div className="w-full max-w-6xl space-y-10 backdrop-blur-md bg-white/5 rounded-3xl p-8 shadow-2xl">
+        <div className="w-full max-w-7xl space-y-8 backdrop-blur-md bg-white/5 rounded-3xl p-8 shadow-2xl">
           <motion.div
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -72,14 +90,16 @@ const SunsetForecast = ({ forecast, onBack }) => {
             </h2>
           </motion.div>
 
-          {/* 7-Day Forecast */}
+          {/* 7-Day Forecast - Horizontal Scroll */}
           <div 
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4"
+            className="flex gap-4 overflow-x-auto pb-4 horizontal-scroll"
             role="list"
             aria-label="7-day sunset forecast"
           >
             {forecast.days.map((day, index) => (
-              <DayCard key={index} day={day} index={index} />
+              <div key={index} className="flex-shrink-0 w-48">
+                <DayCard day={day} index={index} />
+              </div>
             ))}
           </div>
 
